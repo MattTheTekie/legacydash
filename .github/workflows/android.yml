@@ -72,6 +72,10 @@ jobs:
           with open(os.environ['GITHUB_ENV'], 'a') as env:
               env.write('APP_VERSION=' + version + '\nRELEASE_TAG=' + tag + '\nAPK_FILE=' + apk + '\n')
           PY
+      - name: Generate APK checksum
+        shell: bash
+        run: |
+          set -euo pipefail
           sha256sum "$APK_FILE" > "$APK_FILE.sha256"
       - uses: actions/upload-artifact@v4
         with:
