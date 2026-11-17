@@ -1,0 +1,47 @@
+name: Build APK and initial alpha release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sky-family-build
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build debug APK
+        run: gradle --no-daemon :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkyFamily-debug-${{ github.run_number }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - name: Create initial prerelease if absent
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=v0.1.0-alpha
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo 'Initial release already exists. This build is available as a workflow artifact.'
+            exit 0
+          fi
+          cp app/build/outputs/apk/debug/app-debug.apk SkyFamily-v0.1.0-alpha.apk
+          gh release create "$tag" SkyFamily-v0.1.0-alpha.apk --target "$GITHUB_SHA" --prerelease --title 'Sky Family v0.1.0-alpha' --notes 'Initial incomplete Android API 19 dashboard prototype. Debug-signed APK; untested on SKY002. Includes launcher, local notes/calendar, basic drawing/colouring, word puzzle, text pet and configurable web panels. No native Immich/ISS integration or screensaver. Readers/players required for documents/media. Read README limitations and security notes before installing. Future builds use ephemeral debug keys and may require uninstalling, which deletes app data.'
