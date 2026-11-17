@@ -1,4 +1,4 @@
-name: Build APK and initial alpha release
+name: Build and publish current app
 on:
   push:
     branches: [main]
@@ -27,23 +27,67 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Restore development signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: sky-family-development-signing-v1
+      - name: Ensure development signing key exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair -keystore ~/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -dname 'CN=Android Debug,O=Android,C=US' -keyalg RSA -keysize 2048 -validity 10000
+          fi
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
+      - name: Prepare versioned APK and release notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os, pathlib, shutil
+          text = pathlib.Path('app/build.gradle').read_text()
+          version = text.split("versionName '", 1)[1].split("'", 1)[0]
+          if not version or any(not (c.isascii() and (c.isalnum() or c in '._-')) for c in version):
+              raise ValueError('Unsafe or missing app version')
+          sha = os.environ['GITHUB_SHA']
+          tag = 'v' + version + '-' + sha[:7]
+          apk = 'SkyFamily-' + version + '-' + sha[:7] + '.apk'
+          shutil.copyfile('app/build/outputs/apk/debug/app-debug.apk', apk)
+          notes = '\n'.join([
+              'Development alpha APK built from commit ' + sha + '.',
+              '',
+              'Source version: ' + version,
+              'Minimum Android/API support is declared in app/build.gradle; device compatibility is not verified by this build.',
+              'Compilation success is not a gameplay, media, security or hardware test.',
+              'Read the repository feature-status documents for incomplete features and legacy PDF security limitations.',
+              'This release contains only committed source. Pending conversational proposals are not included.',
+              '',
+              'Development signing key is cached on a best-effort basis, not production-managed. Existing installs signed with a different key cannot update in place. Back up app data and original books/artwork before uninstalling or clearing data.',
+              'The original v0.1.0-alpha release is left unchanged.'
+          ]) + '\n'
+          pathlib.Path('RELEASE-NOTES.txt').write_text(notes)
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write('APP_VERSION=' + version + '\nRELEASE_TAG=' + tag + '\nAPK_FILE=' + apk + '\n')
+          PY
+          sha256sum "$APK_FILE" > "$APK_FILE.sha256"
       - uses: actions/upload-artifact@v4
         with:
-          name: SkyFamily-debug-${{ github.run_number }}
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: SkyFamily-${{ env.RELEASE_TAG }}
+          path: |
+            ${{ env.APK_FILE }}
+            ${{ env.APK_FILE }}.sha256
           if-no-files-found: error
-      - name: Create initial prerelease if absent
+      - name: Publish commit-labelled prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          tag=v0.1.0-alpha
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo 'Initial release already exists. This build is available as a workflow artifact.'
-            exit 0
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$APK_FILE" "$APK_FILE.sha256" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$APK_FILE" "$APK_FILE.sha256" --target "$GITHUB_SHA" --prerelease --title "Sky Family $APP_VERSION ($GITHUB_SHA)" --notes-file RELEASE-NOTES.txt
           fi
-          cp app/build/outputs/apk/debug/app-debug.apk SkyFamily-v0.1.0-alpha.apk
-          gh release create "$tag" SkyFamily-v0.1.0-alpha.apk --target "$GITHUB_SHA" --prerelease --title 'Sky Family v0.1.0-alpha' --notes 'Initial incomplete Android API 19 dashboard prototype. Debug-signed APK; untested on SKY002. Includes launcher, local notes/calendar, basic drawing/colouring, word puzzle, text pet and configurable web panels. No native Immich/ISS integration or screensaver. Readers/players required for documents/media. Read README limitations and security notes before installing. Future builds use ephemeral debug keys and may require uninstalling, which deletes app data.'
