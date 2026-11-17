@@ -1,0 +1,11 @@
+# 0.3.0-alpha: games, reading and legacy support
+
+Source update only; no successful compile, emulator test or device test is claimed.
+
+Minimum Android changed to API 17 (Android 4.2 family, including 4.2.2). File selection falls back to ACTION_GET_CONTENT before API 19; media picker is image-only on that old path, while document picker remains available for other files. Legacy WRITE_EXTERNAL_STORAGE permission capped at API 18 is added for drawing exports to app-specific external storage. Android 4.4+ does not receive that permission from this declaration. Uses Java 8 language desugaring supplied by the Android build plugin; existing dependencies and TLS still require real-device checks. No bypass of TLS verification. Modern provider websites can remain incompatible regardless of minimum SDK.
+
+Word games menu: original five-letter guess, mini crossword, original Word Trail swipe-to-connect game. Crossword has two hand-authored rotating connected grids, numbered starts, across/down clues, local saved letters, answer checking and single-letter reveal. Word Trail has four rotating starter levels, gesture wheel, backtracking, shuffle, typed alternative, word reveal and local daily progress. Not commercial Word Snack/Word Cross assets, levels or branding; no extensive dictionary or generated level library. Dates use device local date.
+
+News: native feed parsing and native reading page, header images if supplied, metadata, selectable summary, optional full-text extraction from public HTML article paragraphs/headings, saved offline summaries, and optional explicit external-publisher button. Does not open BBC's website by default on story selection. RSS and basic Atom parsing included; complex feed structures can fail. Image-only metadata fallbacks and guaranteed full text are not implemented. Full text is not saved by the Save Summary action. No paywall bypass or scraping guarantee.
+
+Existing alpha release automation still publishes only its original tag; use the latest Actions APK artifact. Current debug signing is not persistent between builds. Back up data before uninstalling an earlier APK. GPL dependency and source-distribution notes in SPACE-AND-LAUNCHER.md still apply.
