@@ -1,0 +1,12 @@
+package local.skyfamily;
+import android.content.Context;import android.graphics.*;import android.util.AtomicFile;import java.io.*;import java.util.*;import org.json.*;
+final class ArtFiles {
+ static File dir(Context c){File d=new File(c.getFilesDir(),"art-projects");d.mkdirs();return d;}
+ static void write(AtomicFile file,byte[] data)throws Exception{FileOutputStream out=null;try{out=file.startWrite();out.write(data);file.finishWrite(out);}catch(Exception e){if(out!=null)file.failWrite(out);throw e;}}
+ static byte[] bytes(Bitmap bitmap)throws Exception{ByteArrayOutputStream out=new ByteArrayOutputStream();if(!bitmap.compress(Bitmap.CompressFormat.PNG,100,out))throw new IOException("PNG save failed");return out.toByteArray();}
+ static void save(Context c,JSONObject meta,Bitmap paint,Bitmap preview)throws Exception{File d=dir(c);File[] all=d.listFiles();long used=0;int projects=0;if(all!=null)for(File f:all){used+=f.length();if(f.getName().endsWith(".json"))projects++;}String id=meta.getString("id");if(used>100000000L||projects>=100&&!new File(d,id+".json").exists())throw new IOException("Art project storage limit reached");write(new AtomicFile(new File(d,id+".paint.png")),bytes(paint));write(new AtomicFile(new File(d,id+".thumb.png")),bytes(preview));write(new AtomicFile(new File(d,id+".json")),meta.toString().getBytes("UTF-8"));}
+ static JSONObject metadata(Context c,String id)throws Exception{try(InputStream in=new AtomicFile(new File(dir(c),id+".json")).openRead()){return new JSONObject(new String(BookData.read(in,100000),"UTF-8"));}}
+ static ArrayList<JSONObject> list(Context c){ArrayList<JSONObject> result=new ArrayList<>();File[] all=dir(c).listFiles((d,name)->name.endsWith(".json"));if(all!=null)for(File f:all)try{String id=f.getName().substring(0,f.getName().length()-5);result.add(metadata(c,id));}catch(Exception ignored){}Collections.sort(result,(a,b)->Long.compare(b.optLong("updated"),a.optLong("updated")));return result;}
+ static Bitmap paint(Context c,String id)throws Exception{BitmapFactory.Options options=new BitmapFactory.Options();options.inMutable=true;options.inPreferredConfig=Bitmap.Config.ARGB_8888;try(InputStream in=new AtomicFile(new File(dir(c),id+".paint.png")).openRead()){Bitmap b=BitmapFactory.decodeStream(in,null,options);if(b==null||b.getWidth()!=900||b.getHeight()!=560)throw new IOException("Invalid project canvas");return b;}}
+ static void remove(Context c,String id){for(String ext:new String[]{".json",".paint.png",".thumb.png"})new AtomicFile(new File(dir(c),id+ext)).delete();}
+}
