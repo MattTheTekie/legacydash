@@ -1,0 +1,15 @@
+# 0.12.0-alpha / School workspace and temporary PDF markup
+
+Separate School entry near the top of Home. Daily Notes and its stored entries are unchanged. Independent local SQLite database school.sqlite: class notebooks, section-labelled pages, typed school notes, saved vector handwriting, PDF bookshelf references and assignments. No Microsoft branding assets, account integration, OneNote format import or cloud/school-portal sync. Not a feature-complete OneNote clone.
+
+Notes autosave after 650 ms without edits and flush synchronously on navigation/pause/destroy. A save status is shown. Hard process termination before a save can lose the last edit interval. Failed database saves keep drafts only in process memory with a warning; this is not disaster-proof storage. No uninstall/clear-data protection. Uses app-private SQLite with foreign keys and WAL. No automatic migration of Daily Notes into School.
+
+Notebooks group note pages; editable section labels group lessons/revision/homework. Search titles and typed content (not ink OCR or PDF contents). Saved ink is a single fixed-ratio canvas per note, blue pen/highlighter, undo/clear and explicit Scroll mode; no infinite canvas, stylus pressure/palm rejection, rich text or image attachments. Maximum 50 notebooks, 500 pages, 1000 assignments, 50000 typed characters per note and 12000 ink points/400 strokes per note.
+
+Agenda: class, title, instructions/checklist text, optional validated local YYYY-MM-DD due date, Important flag and completion checkbox; To do/Done/All views, per-class filtering, overdue/today labels. Assignment forms require Save. No alarms, notifications, recurring timetable, calendar integration or background school sync.
+
+School JSON export includes notebooks, pages, vector-ink strings, assignment records and PDF reference IDs. Streams output to a chosen document on Android 4.4+, or the app external-files directory on 4.2. Original PDFs are not embedded. An import/restore UI is NOT included in this version. Check/export files before relying on them; partial exports can remain on failure. External app files may be removed on uninstall: copy exports somewhere safe.
+
+PDFs linked from school pages open the existing PDF viewer. Temporary normalized-coordinate vector pen/highlighter overlays follow the PDF's fitted/zoomed/panned page rectangle; Pan preserves viewer gestures. Undo/clear per page, up to 100 marked pages per open viewer and 12000 points/400 strokes each. Marks remain in memory across page switches but disappear on closing/reopening viewer or process loss. No annotation serialization, modified-PDF write, flattened PDF or annotated export. Reading progress and bookmarks retain their existing persistence. PDF originals are unchanged. Legacy PDF trust/security warnings remain.
+
+Existing Hub/Season features, games, uploads, weather diagnostics, themes, birthdays, Santa simulation, Immich and DLNA remain inherited. No dependencies added; declared minimum API 17 retained. Source only: compilation, database persistence, device input, PDF overlay alignment and export behavior require CI/device testing. No successful build or runtime test is claimed.
