@@ -1,0 +1,11 @@
+# 0.16.0-alpha / Explore and screen-wide seasons
+
+Adds Explore to the persistent sidebar. Home keeps its clock/date, local calendar, weather cache, school agenda and photos; the standalone Watch library button and Weather TV quick shortcut are removed. Calendar and Daily Notes get Home shortcuts. Explore groups wildlife/aquariums, planetarium/sky/NASA, world cameras, Weather TV, news and Santa. Cast and installed apps remain in Settings; Pocket creature is added to All/Arcade Games.
+
+Native category glyphs replace matching generic icons: telescope for Explore/space/sky, fish for aquariums, paw for wildlife/zoos, leaf for nature, cloud for weather, camera for place cameras, newspaper for News. Existing unrelated controls retain their original icons. Labels remain visible and parent controls retain their accessible descriptions.
+
+Seasonal background/surface/accent colours now differ across shared native screens. Transparent decoration is attached above every in-app content root, including editor/drawing/provider workspaces; the old Home-only opaque scene panel is removed. Falling leaves, rain, snow, snowmen with falling snow, petals, sparkles and confetti are selectable. Automatic effect follows the seasonal palette. Snowmen are small stationary corner figures with falling snow, not an entire opaque foreground scene. Effects do not consume touches, add padding, resize canvases, enter PNG exports, or change third-party page content. Separate Android dialogs, OS screens and external apps/browsers are not decorated.
+
+New/previously unset choices default to automatic decoration and motion enabled. Explicitly saved Off or disabled-motion choices remain respected. Themes and celebrations settings now describe app-wide scope and expose effect, motion, palette, hemisphere and birthday controls. Animation uses 28 particles and a roughly 15fps invalidation schedule, stops callbacks on detach/background/invisibility, and supports still decoration or Off. These are intended performance/accessibility safeguards, not measurements from the old frame.
+
+Source-only update: compilation, icon appearance, tap/drawing pass-through, video compositing, text contrast, small-screen navigation, animation performance and lifecycle behavior still need CI/device verification. No existing note/database/artwork data is migrated or deleted.
