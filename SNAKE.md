@@ -1,0 +1,3 @@
+# Snake
+
+Adds a separate native Snake entry while retaining all existing games and upload features. Twenty-by-twenty board, food growth, wall/self collision, gradual speed increase, local high score, swipe/buttons/keyboard controls, pause/resume, restart and board-completion state. Reverse turns and multiple queued turns in one tick are blocked. Moving into the tail cell is allowed when that tail moves away. No sound, multiplayer or mid-game persistence. Leaving resets the round; backgrounding pauses it. API 17 configuration retained; source is not compiled or device-tested here. Version remains 0.4.0-alpha; use latest successful Actions artifact.
