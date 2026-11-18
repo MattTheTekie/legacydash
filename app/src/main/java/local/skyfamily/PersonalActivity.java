@@ -8,7 +8,7 @@ public class PersonalActivity extends CalendarPhotosActivity {
  @Override void normalWindow(){LegacyDashApp.requestMode(this);}
  @Override void page(String title){if(extras!=null)extras.leavePage();super.page(title);ShortcutPins.install(this);}
  @Override void home(){super.home();extras().decorateHome();}
- @Override void settings(){super.settings();extras().settings();}
+ @Override void settings(){super.settings();extras().settings();button("Gestures / invisible edge controls",()->GestureSettings.open(this));}
  @Override void castSetup(){receiverNameSetup();}
  EditText receiverEditor(View view){if(view instanceof EditText)return (EditText)view;if(view instanceof ViewGroup){ViewGroup group=(ViewGroup)view;for(int i=0;i<group.getChildCount();i++){EditText found=receiverEditor(group.getChildAt(i));if(found!=null)return found;}}return null;}
  void receiverNameSetup(){settings();final int stamp=revision;View group=body.findViewWithTag("settings.dlna");final EditText input=group==null?null:receiverEditor(group);if(input==null){toast("Receiver name field unavailable");return;}input.requestFocus();input.setSelection(input.length());input.post(()->{if(stamp!=revision||input.getWindowToken()==null)return;input.requestRectangleOnScreen(new Rect(0,0,Math.max(1,input.getWidth()),Math.max(dp(54),input.getHeight())),true);});}
@@ -28,7 +28,7 @@ public class PersonalActivity extends CalendarPhotosActivity {
  @Override void drawing(boolean colouring){if(!colouring){super.drawing(false);return;}new AlertDialog.Builder(this).setTitle("Colouring").setItems(new String[]{"Built-in colouring pages","Import colouring book / PDF, EPUB, CBZ, image","Imported colouring books"},(dialog,index)->{if(index==0)super.drawing(true);else colouringLibrary(index==1);}).setNegativeButton("Cancel",null).show();}
  @Override void frameCreate(){super.frameCreate();button("Import colouring book",()->colouringLibrary(true));button("Imported colouring books",()->colouringLibrary(false));}
  @Override void uploadHub(){super.uploadHub();button("Import colouring book",()->colouringLibrary(true));button("Imported colouring books",()->colouringLibrary(false));}
- @Override protected void onResume(){super.onResume();extras().start();}
+ @Override protected void onResume(){super.onResume();extras().start();GestureSettings.ensure(this);GestureSettings.sync(this);}
  @Override protected void onPause(){if(extras!=null)extras.stop();super.onPause();}
  @Override protected void onDestroy(){if(extras!=null)extras.close();super.onDestroy();}
 }
