@@ -1,10 +1,29 @@
 package local.skyfamily;
-import android.app.AlertDialog;import android.content.Intent;
+import android.app.AlertDialog;import android.content.Intent;import android.graphics.*;import android.graphics.drawable.*;import android.view.*;import android.widget.*;import java.util.*;
 public class PersonalActivity extends CalendarPhotosActivity {
+ static final int NIGHT_BG=0xff171a21,NIGHT_RAIL=0xff20252f,NIGHT_CARD=0xff282e38,NIGHT_TEXT=0xfff2eee6,NIGHT_MUTE=0xffb7beca,NIGHT_EDGE=0xff465060;DashboardExtras extras;final WeakHashMap<GradientDrawable,int[]> uiShapes=new WeakHashMap<>();final WeakHashMap<View,Boolean> uiIcons=new WeakHashMap<>();
+ DashboardExtras extras(){if(extras==null)extras=new DashboardExtras(this);return extras;}boolean night(){return DashboardExtras.dark(prefs);}
  @Override void normalWindow(){LegacyDashApp.requestMode(this);}
- @Override void page(String title){super.page(title);ShortcutPins.install(this);}
+ @Override void page(String title){if(extras!=null)extras.leavePage();super.page(title);ShortcutPins.install(this);}
+ @Override void home(){super.home();extras().decorateHome();}
+ @Override void settings(){super.settings();extras().settings();}
+ @Override void castSetup(){super.castSetup();body.addView(extras().castCard());}
+ @Override ThemeArt.Palette palette(){ThemeArt.Palette value=super.palette();if(night()){value.bg=NIGHT_BG;value.rail=NIGHT_RAIL;value.surface=NIGHT_CARD;value.accent=NIGHT_TEXT;value.muted=NIGHT_MUTE;}return value;}
+ @Override int inkColor(int color){int base=super.inkColor(color);if(base==NIGHT_TEXT)base=INK;if(base==NIGHT_MUTE)base=MUTE;return night()?(base==INK?NIGHT_TEXT:base==MUTE?NIGHT_MUTE:base):base;}
+ @Override int surfaceColor(int color){int base=super.surfaceColor(color);if(base==NIGHT_BG)base=PAPER;else if(base==NIGHT_RAIL)base=PAPER2;else if(base==NIGHT_CARD)base=CARD;else if(base==NIGHT_EDGE)base=LINE;return night()?(base==PAPER?NIGHT_BG:base==PAPER2?NIGHT_RAIL:base==CARD?NIGHT_CARD:base==LINE?NIGHT_EDGE:base):base;}
+ @Override GradientDrawable shape(int color,int stroke,int radius){GradientDrawable value=super.shape(color,stroke,radius);if(uiShapes!=null)uiShapes.put(value,new int[]{color,stroke});return value;}
+ @Override TextView paperText(String value,int size,int color){return super.paperText(value,size,inkColor(color));}
+ @Override TextView label(String value,int size,int color){TextView label=super.label(value,size,color);label.setTextColor(inkColor(label.getCurrentTextColor()));return label;}
+ boolean protectedMedia(View view){return view instanceof ImageView||view instanceof TextureView||view instanceof SurfaceView||view instanceof android.webkit.WebView||view instanceof SpatialPage||view instanceof StudyInk||view instanceof Studio;}
+ void themeOne(View view){if(protectedMedia(view))return;if(view instanceof TextView){TextView label=(TextView)view;int color=inkColor(label.getCurrentTextColor());if(label.getCurrentTextColor()!=color)label.setTextColor(color);if(label instanceof EditText){int hint=inkColor(label.getCurrentHintTextColor());if(label.getCurrentHintTextColor()!=hint)label.setHintTextColor(hint);}}Drawable background=view.getBackground();if(background instanceof ColorDrawable){int color=((ColorDrawable)background).getColor(),next=surfaceColor(color);if(color!=next)view.setBackgroundColor(next);}if(view instanceof ControlIcon||view instanceof CoreGlyph||view instanceof DestinationIcon){boolean dark=night();Boolean previous=uiIcons.get(view);if(previous==null||previous.booleanValue()!=dark){Paint paint=new Paint();paint.setColorFilter(new PorterDuffColorFilter(dark?NIGHT_TEXT:INK,PorterDuff.Mode.SRC_IN));view.setLayerType(View.LAYER_TYPE_SOFTWARE,paint);uiIcons.put(view,dark);view.invalidate();}}}
+ void themeTree(View view){if(protectedMedia(view))return;themeOne(view);if(view instanceof ViewGroup){ViewGroup group=(ViewGroup)view;for(int i=0;i<group.getChildCount();i++)themeTree(group.getChildAt(i));}}
+ @Override void normalize(View view){if(protectedMedia(view))return;if("calendar.fit".equals(view.getTag())){themeTree(view);return;}super.normalize(view);themeOne(view);}
+ void applyAppearance(){for(Map.Entry<GradientDrawable,int[]> entry:uiShapes.entrySet()){GradientDrawable drawable=entry.getKey();int[] colors=entry.getValue();if(drawable==null||colors==null)continue;drawable.setColor(surfaceColor(colors[0]));drawable.setStroke(dp(1),colors[1]==0?android.graphics.Color.TRANSPARENT:surfaceColor(inkColor(colors[1])));}View content=findViewById(android.R.id.content);if(content!=null){themeTree(content);content.invalidate();}}
  void colouringLibrary(boolean pick){Intent intent=new Intent(this,ColouringBookActivity.class);intent.putExtra("import",pick);startActivity(intent);}
  @Override void drawing(boolean colouring){if(!colouring){super.drawing(false);return;}new AlertDialog.Builder(this).setTitle("Colouring").setItems(new String[]{"Built-in colouring pages","Import colouring book / PDF, EPUB, CBZ, image","Imported colouring books"},(dialog,index)->{if(index==0)super.drawing(true);else colouringLibrary(index==1);}).setNegativeButton("Cancel",null).show();}
  @Override void frameCreate(){super.frameCreate();button("Import colouring book",()->colouringLibrary(true));button("Imported colouring books",()->colouringLibrary(false));}
  @Override void uploadHub(){super.uploadHub();button("Import colouring book",()->colouringLibrary(true));button("Imported colouring books",()->colouringLibrary(false));}
+ @Override protected void onResume(){super.onResume();extras().start();}
+ @Override protected void onPause(){if(extras!=null)extras.stop();super.onPause();}
+ @Override protected void onDestroy(){if(extras!=null)extras.close();super.onDestroy();}
 }
