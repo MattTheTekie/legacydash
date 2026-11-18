@@ -7,7 +7,8 @@ public class PersonalActivity extends CalendarPhotosActivity {
  @Override void page(String title){if(extras!=null)extras.leavePage();super.page(title);ShortcutPins.install(this);}
  @Override void home(){super.home();extras().decorateHome();}
  @Override void settings(){super.settings();extras().settings();}
- @Override void castSetup(){super.castSetup();body.addView(extras().castCard());}
+ @Override void castSetup(){CastService service=CastService.instance;if(service!=null&&service.active!=null&&!service.active.uri.isEmpty())super.castSetup();else settings();}
+ @Override LinearLayout paperPanel(String title){return super.paperPanel("Local forecast".equalsIgnoreCase(title)?"Planetary data":title);}
  @Override ThemeArt.Palette palette(){ThemeArt.Palette value=super.palette();if(night()){value.bg=NIGHT_BG;value.rail=NIGHT_RAIL;value.surface=NIGHT_CARD;value.accent=NIGHT_TEXT;value.muted=NIGHT_MUTE;}return value;}
  @Override int inkColor(int color){int base=super.inkColor(color);if(base==NIGHT_TEXT)base=INK;if(base==NIGHT_MUTE)base=MUTE;return night()?(base==INK?NIGHT_TEXT:base==MUTE?NIGHT_MUTE:base):base;}
  @Override int surfaceColor(int color){int base=super.surfaceColor(color);if(base==NIGHT_BG)base=PAPER;else if(base==NIGHT_RAIL)base=PAPER2;else if(base==NIGHT_CARD)base=CARD;else if(base==NIGHT_EDGE)base=LINE;return night()?(base==PAPER?NIGHT_BG:base==PAPER2?NIGHT_RAIL:base==CARD?NIGHT_CARD:base==LINE?NIGHT_EDGE:base):base;}

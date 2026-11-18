@@ -1,0 +1,11 @@
+# 0.34.0-alpha / Planetary data and casting layout
+
+Renames the live Local forecast panel heading to Planetary data through the native panel builder, including panels recreated by automatic cache updates. Forecast fetching, cached values and timestamps are unchanged.
+
+Home reparents the existing live forecast container and one casting card into an equal-width, top-aligned pair when their measured row is at least 600dp wide. Narrower rows stack the cards. Both children use wrap-content height rather than stretching the weather panel to the taller casting card. Casting instructions and QR display height are compacted; the actual supplied APK QR destination and unverified-download warning/confirmation remain. The old separate casting card below the overview is not also inserted. The forecast container keeps its identity so weather refreshes update only its contents without removing the casting card.
+
+DLNA name controls move into the existing Background casting settings position together with its original automatic-receiving checkbox and help text, rather than adding a second disconnected receiver block. The checkbox retains its original enable/disable listener. The single dlna.name preference populates the editor and Home card. Settings also polls the running renderer description names while its status view is attached/visible; Home refreshes its name label on entry/resume/minute tick. A saved-versus-advertised mismatch is shown explicitly. This is the service's current advertised-description name, not verification of a phone's discovery cache.
+
+Saving an unchanged name still checks persistence but avoids interrupting playback. Applying a changed name retains the existing loaded-cast confirmation and discovery restart. Disabled receiving remains disabled. The casting card now links directly to Settings; idle receiver-setup entry also routes there rather than rebuilding Home and appending a duplicate casting card. An active cast's receiver-setup entry retains the existing player route.
+
+No Android build, visual test, QR scan or discovery test was run. Verify CI, phone/tablet/rotation row breakpoints, no duplicate panels, cache refresh inside the paired row, receiver settings placement/toggle/name/status, save/relaunch and source warnings.
