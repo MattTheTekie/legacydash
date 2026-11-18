@@ -3,7 +3,7 @@ import android.os.*;import android.graphics.*;import android.view.*;import andro
 public class GalleryActivity extends SnakeActivity {
  FramePlayer frame;final Handler idle=new Handler();boolean atHome=false,rememberAsked=false;String remembered="";
  @Override public void onCreate(Bundle b){super.onCreate(b);if(Build.VERSION.SDK_INT>=18&&!get("immich.vault").isEmpty())restore("",false);}
- @Override void page(String title){atHome=false;idle.removeCallbacksAndMessages(null);if(frame!=null){frame.close();frame=null;}getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);getWindow().getDecorView().setSystemUiVisibility(0);super.page(title);}
+ @Override void page(String title){atHome=false;idle.removeCallbacksAndMessages(null);if(frame!=null){frame.close();frame=null;}getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);super.page(title);}
  @Override void home(){super.home();section("Photo frame");button("Start fullscreen Immich gallery",()->startGallery(false));button("Start fullscreen uploaded-photo gallery",()->startGallery(true));button("Gallery / screensaver settings",()->gallerySettings());atHome=true;armIdle();}
  void armIdle(){idle.removeCallbacksAndMessages(null);if(atHome&&prefs.getBoolean("gallery.idle",false))idle.postDelayed(()->{if(atHome){boolean local=prefs.getBoolean("gallery.local",false);if(local||!token.isEmpty())startGallery(local);else armIdle();}},prefs.getInt("gallery.idle.seconds",120)*1000L);}
  @Override public void onUserInteraction(){super.onUserInteraction();if(atHome)armIdle();}
