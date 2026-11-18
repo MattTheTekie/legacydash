@@ -1,0 +1,13 @@
+package local.skyfamily;
+import android.content.*;
+final class PetState {
+ final SharedPreferences store;float food,fun,energy,clean,health;int xp;boolean sleeping;long born,last,reactionUntil=0;
+ PetState(Context context){store=context.getSharedPreferences("legacydash.pet",0);long now=System.currentTimeMillis();SharedPreferences old=context.getSharedPreferences("sky",0);born=store.getLong("born",now);last=store.getLong("last",now);food=store.getFloat("food",old.getInt("food",70));fun=store.getFloat("fun",70);energy=store.getFloat("energy",80);clean=store.getFloat("clean",90);health=store.getFloat("health",90);xp=store.getInt("xp",old.getInt("xp",0));sleeping=store.getBoolean("sleep",false);if(!store.contains("born"))save();tick();}
+ float clamp(float value){return Math.max(0,Math.min(100,value));}
+ void tick(){long now=System.currentTimeMillis();if(now<last){last=now;save();return;}long minutes=(now-last)/60000;if(minutes==0)return;float elapsed=Math.min(1440,minutes);food=clamp(food-elapsed*.15f);fun=clamp(fun-elapsed*.07f);clean=clamp(clean-elapsed*.035f);energy=clamp(energy+elapsed*(sleeping?.6f:-.08f));health=clamp(health+elapsed*(food<15||clean<15||energy<5?-.1f:.04f));last=now;save();}
+ void save(){store.edit().putLong("born",born).putLong("last",last).putFloat("food",food).putFloat("fun",fun).putFloat("energy",energy).putFloat("clean",clean).putFloat("health",health).putInt("xp",xp).putBoolean("sleep",sleeping).apply();}
+ long ageHours(){return Math.max(0,(System.currentTimeMillis()-born)/3600000L);}
+ String stage(){long age=Math.max(0,System.currentTimeMillis()-born);return age<60000?"Egg":ageHours()<6?"Baby":ageHours()<24||xp<60?"Young companion":"Winged companion";}
+ String mood(){return sleeping?"Sleeping":health<30?"Unwell":food<25?"Hungry":energy<20?"Tired":clean<25?"Needs cleaning":fun<30?"Bored":"Happy";}
+ String care(String action){tick();if(action.equals("sleep")){sleeping=!sleeping;save();return sleeping?"Settling down to sleep":"Your companion woke up";}if(sleeping)return "Your companion is sleeping";String result;if(action.equals("feed")){if(food>=95)return "Your companion is full";food=clamp(food+22);clean=clamp(clean-2);xp+=2;result="Enjoyed a meal";}else if(action.equals("clean")){clean=100;fun=clamp(fun+4);result="Fresh and clean";}else if(action.equals("medicine")){if(health>=90)return "Your companion is healthy";health=clamp(health+25);result="Feeling better";}else{if(energy<10||food<10)return "Rest and a meal are needed first";energy=clamp(energy-10);food=clamp(food-6);fun=clamp(fun+(action.equals("play")?22:5));xp+=action.equals("play")?5:7;result=action.equals("play")?"Playtime complete":"Training complete";}reactionUntil=System.currentTimeMillis()+2500;save();return result;}
+}
