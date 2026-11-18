@@ -1,0 +1,11 @@
+package local.skyfamily;
+import android.content.*;import android.view.View;import android.widget.*;import java.lang.ref.WeakReference;
+public class AutoCastActivity extends CompanionActivity implements CastService.Presenter {
+ boolean openingPlayer=false;final Runnable present=()->showCast();
+ @Override void button(String title,Runnable action){String value=title.toLowerCase(java.util.Locale.US);if(value.contains("cast receiver")||value.equals("persistent dlna receiving"))return;super.button(title,action);}
+ @Override void settings(){super.settings();section("Background casting");CheckBox enabled=new CheckBox(this);enabled.setText("Receive DLNA casts automatically");enabled.setChecked(prefs.getBoolean("cast.persistent",true));body.addView(enabled);enabled.setOnCheckedChangeListener((view,checked)->{prefs.edit().putBoolean("cast.persistent",checked).apply();if(checked)startCast();else stopService(new Intent(this,CastService.class));});text("No receiving screen is required. Incoming Play opens fullscreen while legacydash is visible. When another app is in front, tap the receiver notification. Trusted LAN only: DLNA has no pairing password.");}
+ @Override void castSetup(){CastService service=CastService.instance;if(service!=null&&service.active!=null&&!service.active.uri.isEmpty()){startActivity(new Intent(this,CastPlayerActivity.class));return;}home();toast("Casting receives automatically in the background");}
+ @Override public void showCast(){CastService service=CastService.instance;if(!resumed||openingPlayer||service==null||service.active==null||!service.active.wantPlay||service.failed||service.dismissedGeneration==service.generation)return;if(touching){ui.removeCallbacks(present);ui.postDelayed(present,150);return;}flushSchool();if(dirty||!unsaved.isEmpty()){service.detail="Cast ready / resolve the unsaved school note, then tap the receiver notification";return;}openingPlayer=true;startActivity(new Intent(this,CastPlayerActivity.class));}
+ @Override protected void onResume(){super.onResume();openingPlayer=false;CastService.visible=new WeakReference<CastService.Presenter>(this);ui.post(present);}
+ @Override protected void onPause(){ui.removeCallbacks(present);if(CastService.visible.get()==this)CastService.visible=new WeakReference<CastService.Presenter>(null);super.onPause();}
+}
