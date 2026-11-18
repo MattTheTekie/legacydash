@@ -1,0 +1,15 @@
+# 0.17.0-alpha / first functional-fix batch
+
+Display name becomes legacydash, keeping local.skyfamily and existing data. Top-left SKY text becomes the existing app icon. Apps is restored on Home. Home/School/Games/Settings/Apps/Calendar/Notes/Create receive specific monochrome glyphs; Explore category icons are also filtered to the same ink colour. The shell uses a narrower icon-only rail and hides its header on short-height displays; workspace toolbars shrink to 48dp and still scroll. This is a targeted landscape improvement, not a tested all-screen layout rewrite.
+
+School Type/Ink controls now keep typed text visible beneath a transparent handwriting layer. Type passes touches through to the editor; Ink writes on top and two-finger gestures scroll. The layer observes editor scrolling and stores reference dimensions per new stroke, preserving coordinate scale through viewport-height changes. Existing arrays remain readable. Ink is coordinate-based, not anchored to semantic text positions: inserting/deleting/reflowing text beneath existing handwriting can still change its relationship to the text. Text formatting, note autosave, references and JSON export remain.
+
+PDF annotation defaults to Pen rather than Pan. Ink modes intercept the complete gesture stream so a stroke cannot fall through into swipe-to-change-page, including during rendering. Pan remains explicit. Stroke data is saved per imported book/page in app preferences on pen-up/undo/clear; corrupt saved annotation data is not overwritten. Original PDFs remain unchanged. Sidecar annotations are not flattened into PDF exports or included in School JSON exports. Save failures report NOT SAVED and keep the in-memory layer.
+
+Content focus mode hides controls after eight seconds for web viewing, PDFs, notes and drawings. It does not activate while a finger is down or the keyboard appears visible. First touch is consumed to reveal controls; Back also reveals. Normal shell navigation returns on leaving/backgrounding. Santa opens the official NORAD website instead of the fictional simulation. Seasonal decoration and website compatibility limitations remain.
+
+Home idle-gallery scheduling is rearmed on resume and user interaction; unset idle preferences default enabled. Explicit saved choices remain. Source availability is checked before leaving Home, with a visible error instead of entering an empty preparation screen. The gallery still requires configured Immich credentials or uploaded images and remains Home-only so it does not replace active schoolwork.
+
+NOT INCLUDED / STILL PENDING: wildcard/all-interface upload binding, persistent/background cast receiver, proper animated virtual-pet engine and empty-space pet docking, exhaustive responsive layout refactor and device tests. Existing upload and cast lifecycle behavior is not claimed fixed.
+
+No compilation or Android-device test was run here. CI/device checks are required for Java/API compatibility, note ink/text scroll and resize behavior, annotation persistence and page navigation, first-touch gesture swallowing, keyboard/rotation behavior, idle source failures, icon visibility and landscape layout.
