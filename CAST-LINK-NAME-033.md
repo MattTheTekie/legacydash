@@ -1,0 +1,11 @@
+# 0.33.0-alpha / BubbleUPnP QR and saved receiver name
+
+Changes the live casting-card sender labels from BubbleCast to BubbleUPnP and encodes exactly the user-supplied URL: http://cdn.veltron.net/tmp/BubbleUPnP_Pro_v4.4.12_2000900_Mod_armeabi_v7a.apk . Historical release notes are unchanged. The QR is explicitly a third-party APK URL, not a Play Store listing or pairing code. Fetching the supplied URL for verification failed; there is no claim about accessibility, contents, signature, licence, safety or device compatibility. The APK is not downloaded, bundled or installed by legacydash.
+
+The casting card displays an unverified/HTTP warning, and tapping its link asks for confirmation before handing the exact URL to an external handler. Scanning the QR opens that URL directly on the scanning device under that device's browser/security behavior. No install-packages permission, automatic installer or security-setting bypass is added. Music support remains sender-dependent rather than newly verified for this APK.
+
+Settings adds a DLNA device-name field using the existing dlna.name preference. Names are trimmed, limited to 1-64 characters and reject control characters. A checked preferences commit saves the value across launches. Applying a changed name while media is loaded requires an in-app confirmation that it will end the cast. The receiver then stops that media and rebuilds its network discovery endpoints with the saved name, keeping the existing UUID, receiver-enable preference and service lifecycle. If the receiver is disabled, the name is stored for the next enable/start instead. Senders can cache device descriptions and may need a device-list refresh or rediscovery interval before displaying the new name.
+
+The helper uses existing receiver methods on the UI thread, as the receiver's periodic scan already does; this is not seamless active-playback renaming. Network/socket failures cannot guarantee immediate advertising. Saving a name never auto-enables a deliberately disabled receiver.
+
+No Android build, QR scan, APK verification or DLNA sender/device test was run. Verify CI, exact QR decode, warning/link behavior, name validation/save/relaunch, applying during paused/playing casts, disabled receiver behavior, discovery refresh and existing media/theme/weather features.
