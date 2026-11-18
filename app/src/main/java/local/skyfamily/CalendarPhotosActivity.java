@@ -1,8 +1,10 @@
 package local.skyfamily;
 import android.os.Build;import android.view.*;import android.widget.*;import org.json.*;import java.util.*;
 public class CalendarPhotosActivity extends SpatialNotebookActivity {
- CalendarPane calendarPane;final HashMap<String,String> calendarDrafts=new HashMap<>();SavedPhotoPreview photoPreview;boolean sessionRestoring=false,photosWaiting=false,selectionSaveFailed=false;SavedPhotoPreview preview(){if(photoPreview==null)photoPreview=new SavedPhotoPreview(this);return photoPreview;}
- @Override void page(String title){if(calendarPane!=null)calendarPane.flush();if(photoPreview!=null)photoPreview.clearTargets();photosWaiting=false;super.page(title);calendarPane=null;}
+ CalendarPane calendarPane;final HashMap<String,String> calendarDrafts=new HashMap<>();SavedPhotoPreview photoPreview;boolean sessionRestoring=false,photosWaiting=false,selectionSaveFailed=false;ForecastRefresh forecastRefresh;LinearLayout forecastCard;SavedPhotoPreview preview(){if(photoPreview==null)photoPreview=new SavedPhotoPreview(this);return photoPreview;}ForecastRefresh forecasts(){if(forecastRefresh==null)forecastRefresh=new ForecastRefresh(this);return forecastRefresh;}
+ @Override void page(String title){if(calendarPane!=null)calendarPane.flush();if(photoPreview!=null)photoPreview.clearTargets();photosWaiting=false;forecastCard=null;super.page(title);calendarPane=null;}
+ @Override LinearLayout weatherSummary(){forecastCard=new LinearLayout(this);forecastCard.setOrientation(1);forecastCard.addView(super.weatherSummary(),new LinearLayout.LayoutParams(-1,-2));return forecastCard;}
+ void forecastCacheChanged(){if(forecastCard!=null){forecastCard.removeAllViews();forecastCard.addView(super.weatherSummary(),new LinearLayout.LayoutParams(-1,-2));}if(!currentTitle.equals("Planetary data"))return;try{JSONObject location=new JSONObject(get("planetary.location")),cache=new JSONObject(get("planetary.cache"));String place=location.optString("latitude")+","+location.optString("longitude");if(!place.equals(cache.optString("place")))return;JSONObject data=cache.optJSONObject("data");if(data==null)return;long fetched=cache.optLong("fetched"),age=System.currentTimeMillis()-fetched;ViewParent parent=body.getParent();int position=parent instanceof ScrollView?((ScrollView)parent).getScrollY():0;new PlanetaryPanel(this).show(location,data,fetched,age<0||age>=ForecastRefresh.INTERVAL);final LinearLayout content=body;content.post(()->{if(body!=content)return;ViewParent next=content.getParent();if(next instanceof ScrollView)((ScrollView)next).scrollTo(0,position);});}catch(Exception ignored){}}
  @Override void calendar(){page("Calendar");header.setVisibility(View.GONE);fillWorkspace();calendarPane=new CalendarPane(this,calendarDrafts);body.addView(calendarPane,new LinearLayout.LayoutParams(-1,0,1));updateDock();}
  @Override void updateDock(){super.updateDock();if(calendarPane!=null&&petDock!=null)petDock.setVisibility(View.GONE);}
  @Override LinearLayout photoPanel(){LinearLayout panel=paperPanel("Your photos");ImageView image=new ImageView(this);image.setScaleType(ImageView.ScaleType.CENTER_CROP);image.setBackground(shape(palette().rail,0,12));panel.addView(image,new LinearLayout.LayoutParams(-1,dp(220)));TextView status=paperText("Loading saved photo source...",15,MUTE);panel.addView(status);panel.addView(paperText("Open photos >",17,INK));panel.setFocusable(true);panel.setOnClickListener(view->framePhotos());homePhotos=panel;preview().bind(image,status);return panel;}
@@ -11,7 +13,7 @@ public class CalendarPhotosActivity extends SpatialNotebookActivity {
  @Override void choose(Set<String> ids){super.choose(ids);selectionSaveFailed=!prefs.edit().putStringSet(albumKey(),new HashSet<String>(ids)).putBoolean("gallery.local",false).commit();if(selectionSaveFailed)toast("Album selection NOT SAVED / check device storage");preview().refresh(true);}
  @Override void albums(){if(token.isEmpty()){immich();return;}SavedAlbums.show(this);}
  @Override void forget(){if(photoPreview!=null)photoPreview.clear();super.forget();}
- @Override protected void onResume(){super.onResume();preview().refresh(false);}
- @Override protected void onPause(){if(calendarPane!=null)calendarPane.flush();super.onPause();}
- @Override protected void onDestroy(){if(photoPreview!=null)photoPreview.close();super.onDestroy();}
+ @Override protected void onResume(){super.onResume();preview().refresh(false);forecasts().start();}
+ @Override protected void onPause(){if(forecastRefresh!=null)forecastRefresh.stop();if(calendarPane!=null)calendarPane.flush();super.onPause();}
+ @Override protected void onDestroy(){if(forecastRefresh!=null)forecastRefresh.close();if(photoPreview!=null)photoPreview.close();super.onDestroy();}
 }
