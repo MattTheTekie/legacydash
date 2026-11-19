@@ -1,5 +1,5 @@
 package local.skyfamily;
-import android.content.res.Configuration;import android.os.Bundle;import android.view.*;import android.widget.*;import java.util.*;
+import org.json.*;import android.content.res.Configuration;import android.os.Bundle;import android.view.*;import android.widget.*;import java.util.*;
 public class ExploreActivity extends UnifiedActivity {
  boolean cleaningHome=false,exploreRoute=false,effectsRunning=false;SeasonalOverlay seasonal;
  static final String[] EFFECTS={"off","auto","leaves","rain","snow","snowmen","petals","sparkles","confetti"};
